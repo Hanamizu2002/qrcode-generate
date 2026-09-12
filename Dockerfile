@@ -5,13 +5,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update \
+RUN sed -i \
+        -e 's|http://deb.debian.org/debian|https://mirrors.tuna.tsinghua.edu.cn/debian|g' \
+        -e 's|http://deb.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' \
+        /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get install --no-install-recommends -y libcairo2 \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 app
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+        --index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+        -r requirements.txt
 
 COPY --chown=app:app api_server.py url_to_svg.py logo.svg ./
 
