@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# IDE and OS
+.idea/
+*.iml
+.DS_Store
+
+# Default generated output
+/qrcode.svg
+/qrcode.png
