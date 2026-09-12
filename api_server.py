@@ -3,9 +3,16 @@
 
 import argparse
 import json
+import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from url_to_svg import generate_svg, svg_to_png
+
+ALLOWED_ORIGINS = {
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "https://tools.voxisle.art").split(",")
+    if origin.strip()
+}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -100,6 +107,14 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Cache-Control", "no-store")
+        origin = self.headers.get("Origin")
+        if origin in ALLOWED_ORIGINS:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Expose-Headers", "Content-Disposition, X-QR-Version, X-QR-Error-Correction, X-Center-Ratio, X-QR-Color")
+            self.send_header("Access-Control-Max-Age", "86400")
+            self.send_header("Vary", "Origin")
 
     def log_message(self, message, *args):
         print(f"[{self.log_date_time_string()}] {message % args}")

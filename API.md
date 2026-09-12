@@ -33,6 +33,14 @@ Dockerfile 中 Debian 软件包和 Python 依赖默认使用中科大 APT 与 Py
 docker run -d --name qrcode-api -p 8000:8000 --restart unless-stopped qrcode-api
 ```
 
+如需允许多个前端域名，使用英文逗号分隔：
+
+```bash
+docker run -d --name qrcode-api -p 8000:8000 \
+  -e CORS_ALLOWED_ORIGINS=https://tools.voxisle.art,https://admin.voxisle.art \
+  --restart unless-stopped qrcode-api
+```
+
 验证健康状态：
 
 ```bash
@@ -74,7 +82,7 @@ docker compose down
 - 二维码使用 H 级纠错，最低版本为 4。
 - SVG 和 PNG 均为透明背景，适合放在白色或浅色背景上。
 - 服务会将结果栅格化并进行解码验证；无法验证时返回错误，不输出文件。
-- 当前不返回 CORS 响应头。浏览器跨域调用时应通过同源反向代理转发。
+- 默认允许 `https://tools.voxisle.art` 跨域调用。可通过 `CORS_ALLOWED_ORIGINS` 配置英文逗号分隔的精确 Origin 白名单。
 
 ## `GET /health`
 
@@ -208,7 +216,16 @@ curl -X POST http://127.0.0.1:8000/generate \
 Allow: GET, POST, OPTIONS
 ```
 
-此响应用于声明支持的方法，不代表已启用跨域访问。
+当请求的 `Origin` 在 `CORS_ALLOWED_ORIGINS` 白名单内时，预检和实际响应还会返回：
+
+```http
+Access-Control-Allow-Origin: https://tools.voxisle.art
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Expose-Headers: Content-Disposition, X-QR-Version, X-QR-Error-Correction, X-Center-Ratio, X-QR-Color
+Access-Control-Max-Age: 86400
+Vary: Origin
+```
 
 ## 未定义路径
 
