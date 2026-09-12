@@ -25,6 +25,8 @@
 docker build -t qrcode-api .
 ```
 
+Dockerfile 中 Debian 软件包和 Python 依赖默认使用中科大 APT 与 PyPI 镜像下载。镜像地址可通过 `DEBIAN_MIRROR` 和 `PYPI_INDEX_URL` 构建参数覆盖。`python:3.12-slim-bookworm` 基础镜像仍由 Docker 引擎拉取；如果 Docker Hub 访问较慢，需要在部署主机上单独配置镜像加速器。
+
 启动容器：
 
 ```bash
@@ -35,6 +37,33 @@ docker run -d --name qrcode-api -p 8000:8000 --restart unless-stopped qrcode-api
 
 ```bash
 curl http://127.0.0.1:8000/health
+```
+
+### Docker Compose 部署
+
+构建并启动：
+
+```bash
+docker compose up -d --build
+```
+
+默认对外端口为 `8000`。可以通过环境变量修改：
+
+```bash
+QR_PORT=8080 docker compose up -d --build
+```
+
+查看运行和健康状态：
+
+```bash
+docker compose ps
+docker compose logs -f qrcode-api
+```
+
+停止服务：
+
+```bash
+docker compose down
 ```
 
 ## 通用约定
